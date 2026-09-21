@@ -97,12 +97,12 @@ public class OrderService {
         if ("BUY".equalsIgnoreCase(side)) {
             double totalCost = currentPrice * quantity;
             if (user.getBalance() < totalCost) {
-                throw new IllegalArgumentException("Нямате достатъчно баланс за тази покупка!");
+                throw new IllegalArgumentException("Insufficient balance for this purchase!");
             }
         } else if ("SELL".equalsIgnoreCase(side)) {
             int ownedQuantity = calculateOwnedQuantity(user, order.getSymbol());
             if (ownedQuantity < quantity) {
-                throw new IllegalArgumentException("Нямате налични бройки за продажба! Притежавате: " + ownedQuantity);
+                throw new IllegalArgumentException("Insufficient assets to sell! You currently own: " + ownedQuantity);
             }
         }
 
@@ -115,12 +115,12 @@ public class OrderService {
         if ("BUY".equalsIgnoreCase(side)) {
             double estimatedCost = targetPrice * orderReq.getQuantity();
             if (user.getBalance() < estimatedCost) {
-                throw new IllegalArgumentException("Нямате достатъчно баланс за тази чакаща поръчка!");
+                throw new IllegalArgumentException("Insufficient balance for this limit order!");
             }
         } else if ("SELL".equalsIgnoreCase(side)) {
             int ownedQuantity = calculateOwnedQuantity(user, orderReq.getSymbol());
             if (ownedQuantity < orderReq.getQuantity()) {
-                throw new IllegalArgumentException("Нямате налични бройки за пускане на тази продажба!");
+                throw new IllegalArgumentException("Insufficient assets to place this sell order!");
             }
         }
 
@@ -141,10 +141,10 @@ public class OrderService {
     @Transactional
     public Order cancelOrder(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Поръчката не е намерена!"));
+                .orElseThrow(() -> new RuntimeException("Order not found!"));
 
         if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
-            throw new IllegalArgumentException("Могат да се отменят само чакащи (PENDING) поръчки!");
+            throw new IllegalArgumentException("Only PENDING orders can be cancelled!");
         }
 
         order.setStatus("CANCELLED");

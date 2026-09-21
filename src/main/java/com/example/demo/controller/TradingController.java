@@ -32,7 +32,7 @@ public class TradingController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("message", "Възникна грешка при обработката на поръчката."));
+            return ResponseEntity.internalServerError().body(Map.of("message", "An error occurred while processing the order."));
         }
     }
 
@@ -40,7 +40,7 @@ public class TradingController {
     public ResponseEntity<?> cancelOrder(@PathVariable Long id) {
         try {
             orderService.cancelOrder(id);
-            return ResponseEntity.ok(Map.of("message", "Поръчката бе отменена успешно!"));
+            return ResponseEntity.ok(Map.of("message", "Order cancelled successfully!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {

@@ -16,13 +16,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // 1. Стандартна SockJS точка (за фолбек)
+        // Ендпоинт с SockJS поддръжка
         registry.addEndpoint("/ws-trading")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
-
-        // 2. Чиста WebSocket точка (без SockJS overhead)
-        registry.addEndpoint("/ws-trading")
-                .setAllowedOriginPatterns("*");
     }
 }

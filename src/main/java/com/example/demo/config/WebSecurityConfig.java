@@ -20,8 +20,9 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults()) // Използва Bean-а corsConfigurationSource по-долу
+            .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/ws-trading/**").permitAll()
                 .requestMatchers("/**").permitAll()
             )
             .formLogin(form -> form.disable())
@@ -33,12 +34,21 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
+        
+        // Разрешени домейни
+        configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:3000",
+            "http://127.0.0.1:3000",
             "https://trading-frontend-lolc.onrender.com"
         ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        
+        // Разрешени HTTP методи
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        
+        // Разрешени хедъри
         configuration.setAllowedHeaders(List.of("*"));
+        
+        // Разрешаване на изпращането на cookies/credentials
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
