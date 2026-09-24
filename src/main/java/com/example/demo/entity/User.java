@@ -16,17 +16,18 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private Double balance;
+    @Column(nullable = false)
+    private double balance = 0.0; // Примитивен тип с подразбираща се стойност
 
     public User() {}
 
-    public User(String username, String password, Double balance) {
+    public User(String username, String password, double balance) {
         this.username = username;
         this.password = password;
         this.balance = balance;
     }
 
-    // Getters and Setters
+    // --- GETTERS & SETTERS ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -36,6 +37,6 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public Double getBalance() { return balance; }
-    public void setBalance(Double balance) { this.balance = balance; }
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
 }

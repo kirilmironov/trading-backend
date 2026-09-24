@@ -13,10 +13,14 @@ public class StockService {
 
     private final StockRepository stockRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final MatchingEngineService matchingEngineService; // 1. Инжектираме MatchingEngineService
 
-    public StockService(StockRepository stockRepository, SimpMessagingTemplate messagingTemplate) {
+    public StockService(StockRepository stockRepository, 
+                        SimpMessagingTemplate messagingTemplate,
+                        MatchingEngineService matchingEngineService) {
         this.stockRepository = stockRepository;
         this.messagingTemplate = messagingTemplate;
+        this.matchingEngineService = matchingEngineService;
     }
 
     public void updateStockPrice(String symbol, double price) {
@@ -29,6 +33,13 @@ public class StockService {
 
         stock.setPrice(finalPrice);
         stockRepository.save(stock);
+
+        // 2. ИЗПОЛЗВАМЕ MATCHING ENGINE: Проверяваме LIMIT поръчки и TP/SL нива на позициите за новата цена
+        try {
+            matchingEngineService.processPendingOrders(symbol, finalPrice);
+        } catch (Exception e) {
+            System.err.println("Error processing matching engine for " + symbol + ": " + e.getMessage());
+        }
 
         // Изпращаме новата цена към UI
         messagingTemplate.convertAndSend("/topic/ticks", stock);

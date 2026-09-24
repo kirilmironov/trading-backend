@@ -12,13 +12,13 @@ public class Order {
     private Long id;
 
     private String symbol;
-    private int quantity;
+    private double quantity;     // Променено от int на double за дробни единици
     private Double price;
     private String type;        // "BUY" / "SELL"
     private String side;        // "BUY" / "SELL"
-    private String orderType;   // "MARKET" / "LIMIT" / "STOP_LOSS" / "TAKE_PROFIT"
+    private String orderType;   // "MARKET" / "LIMIT"
     private Double targetPrice;
-    private String status;      // "PENDING" / "EXECUTED"
+    private String status;      // "PENDING" / "EXECUTED" / "CANCELLED"
     private LocalDateTime timestamp;
 
     @ManyToOne
@@ -34,8 +34,8 @@ public class Order {
     public String getSymbol() { return symbol; }
     public void setSymbol(String symbol) { this.symbol = symbol; }
 
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
+    public double getQuantity() { return quantity; }
+    public void setQuantity(double quantity) { this.quantity = quantity; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }

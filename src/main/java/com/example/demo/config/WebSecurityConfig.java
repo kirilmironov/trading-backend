@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -16,13 +17,15 @@ import java.util.List;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
+            // Позволява iframe заявки (критично за SockJS транспорт през WebSockets)
+            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/ws-trading/**").permitAll()
+                .requestMatchers("/api/**").permitAll()
                 .requestMatchers("/**").permitAll()
             )
             .formLogin(form -> form.disable())
@@ -31,24 +34,23 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    @Bean CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Разрешени домейни
+
+        // Разрешени домейни за React и Render
         configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "https://trading-frontend-lolc.onrender.com"
         ));
-        
+
         // Разрешени HTTP методи
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-        
+
         // Разрешени хедъри
         configuration.setAllowedHeaders(List.of("*"));
-        
-        // Разрешаване на изпращането на cookies/credentials
+
+        // Разрешаване на бисквитки/автентикация
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

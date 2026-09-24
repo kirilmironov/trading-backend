@@ -24,10 +24,12 @@ public class TradingController {
         this.stockRepository = stockRepository;
     }
 
+    // --- ORDERS ENDPOINTS ---
+
     @PostMapping("/orders")
-    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderReq, @RequestParam String username) {
+    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderReq, @RequestParam Long userId) {
         try {
-            Order savedOrder = orderService.createOrder(orderReq, username);
+            Order savedOrder = orderService.createOrder(orderReq, userId);
             return ResponseEntity.ok(savedOrder);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -48,13 +50,15 @@ public class TradingController {
         }
     }
 
+    @GetMapping("/orders/user/{userId}")
+    public List<Order> getOrdersByUserId(@PathVariable Long userId) {
+        return orderService.getOrdersByUserId(userId);
+    }
+
+    // --- STOCKS ENDPOINTS ---
+
     @GetMapping("/stocks")
     public List<Stock> getStocks() {
         return stockRepository.findAll();
-    }
-
-    @GetMapping("/orders/{username}")
-    public List<Order> getOrdersByUser(@PathVariable String username) {
-        return orderService.getOrdersByUser(username);
     }
 }
