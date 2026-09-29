@@ -23,6 +23,9 @@ public class WebSecurityConfig {
     @Value("${server.servlet.session.cookie.secure:true}")
     private boolean secureCookies;
 
+    @Value("${app.frontend-origin}")
+    private String frontendOrigin;
+
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookieCustomizer(cookie -> cookie
@@ -54,7 +57,7 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(List.of(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            "https://trading-frontend-lolc.onrender.com"
+            frontendOrigin
         ));
 
         // Разрешени HTTP методи

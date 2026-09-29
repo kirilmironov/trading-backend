@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -25,6 +26,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private static final Pattern USER_TOPIC = Pattern.compile("^/topic/user/(\\d+)/(balance|orders)$");
     private final UserRepository userRepository;
 
+    @Value("${app.frontend-origin:https://trading-frontend-lolc.onrender.com}")
+    private String frontendOrigin;
+
     public WebSocketConfig(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -41,7 +45,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins(
                         "http://localhost:3000",
                         "http://127.0.0.1:3000",
-                        "https://trading-frontend-lolc.onrender.com")
+                        frontendOrigin)
                 .withSockJS();
     }
 
