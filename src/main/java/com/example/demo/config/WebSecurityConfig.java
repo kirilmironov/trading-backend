@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,10 +20,18 @@ import java.util.List;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
+    @Value("${server.servlet.session.cookie.secure:true}")
+    private boolean secureCookies;
+
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookieCustomizer(cookie -> cookie
+            .sameSite(secureCookies ? "None" : "Lax")
+            .secure(secureCookies));
+
         http
             .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
             .cors(Customizer.withDefaults())
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
