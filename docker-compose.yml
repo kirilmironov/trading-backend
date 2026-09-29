@@ -23,6 +23,8 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 9702149340
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SESSION_COOKIE_SAME_SITE: lax
+      SESSION_COOKIE_SECURE: "false"
     depends_on:
       - postgres-db
 

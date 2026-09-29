@@ -6,6 +6,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -19,14 +21,16 @@ public class WebSecurityConfig {
 
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
             .cors(Customizer.withDefaults())
-            // Позволява iframe заявки (критично за SockJS транспорт през WebSockets)
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/ws-trading/**").permitAll()
-                .requestMatchers("/api/**").permitAll()
-                .requestMatchers("/**").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/csrf").permitAll()
+                .requestMatchers("/api/stocks", "/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/api/**", "/ws-trading/**").authenticated()
+                .anyRequest().permitAll()
             )
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable());
@@ -38,7 +42,7 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Разрешени домейни за React и Render
-        configuration.setAllowedOriginPatterns(List.of(
+        configuration.setAllowedOrigins(List.of(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "https://trading-frontend-lolc.onrender.com"
@@ -50,7 +54,6 @@ public class WebSecurityConfig {
         // Разрешени хедъри
         configuration.setAllowedHeaders(List.of("*"));
 
-        // Разрешаване на бисквитки/автентикация
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

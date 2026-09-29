@@ -10,7 +10,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "http://localhost:5173") // портовете на React / Vite
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+            .allowedOrigins(
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:5173",
+                "https://trading-frontend-lolc.onrender.com")
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
+            .allowedHeaders("*")
+            .allowCredentials(true);
     }
 }

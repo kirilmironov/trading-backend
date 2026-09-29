@@ -13,14 +13,20 @@ public class StockService {
 
     private final StockRepository stockRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final MatchingEngineService matchingEngineService; // 1. Инжектираме MatchingEngineService
+    private final SpotMatchingEngineService matchingEngineService;
+    private final SpotOcoOrderService spotOcoOrderService;
+    private final FuturesOrderService futuresOrderService;
 
-    public StockService(StockRepository stockRepository, 
+    public StockService(StockRepository stockRepository,
                         SimpMessagingTemplate messagingTemplate,
-                        MatchingEngineService matchingEngineService) {
+                        SpotMatchingEngineService matchingEngineService,
+                        SpotOcoOrderService spotOcoOrderService,
+                        FuturesOrderService futuresOrderService) {
         this.stockRepository = stockRepository;
         this.messagingTemplate = messagingTemplate;
         this.matchingEngineService = matchingEngineService;
+        this.spotOcoOrderService = spotOcoOrderService;
+        this.futuresOrderService = futuresOrderService;
     }
 
     public void updateStockPrice(String symbol, double price) {
@@ -37,8 +43,16 @@ public class StockService {
         // 2. ИЗПОЛЗВАМЕ MATCHING ENGINE: Проверяваме LIMIT поръчки и TP/SL нива на позициите за новата цена
         try {
             matchingEngineService.processPendingOrders(symbol, finalPrice);
+            spotOcoOrderService.processPendingOrders(symbol, finalPrice);
         } catch (Exception e) {
             System.err.println("Error processing matching engine for " + symbol + ": " + e.getMessage());
+        }
+
+        try {
+            futuresOrderService.processPendingOrders(symbol, finalPrice);
+            futuresOrderService.processLiquidations(symbol, finalPrice);
+        } catch (Exception e) {
+            System.err.println("Error processing Futures liquidation for " + symbol + ": " + e.getMessage());
         }
 
         // Изпращаме новата цена към UI

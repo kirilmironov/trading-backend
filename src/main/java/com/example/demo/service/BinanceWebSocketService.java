@@ -14,20 +14,18 @@ import java.net.URI;
 public class BinanceWebSocketService {
 
     private final StockService stockService;
-    private final MatchingEngineService matchingEngineService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private WebSocketClient webSocketClient;
 
-    public BinanceWebSocketService(StockService stockService, MatchingEngineService matchingEngineService) {
+    public BinanceWebSocketService(StockService stockService) {
         this.stockService = stockService;
-        this.matchingEngineService = matchingEngineService;
     }
 
     @PostConstruct
     public void connectToBinance() {
-        String streamUrl = "wss://stream.binance.com:9443/ws" +
-                "/btcusdc@ticker/ethusdc@ticker/solusdc@ticker/bnbusdc@ticker/adausdc@ticker" +
-                "/xrpusdc@ticker/dogeusdc@ticker/avaxusdc@ticker/dotusdc@ticker/linkusdc@ticker";
+        String streamUrl = "wss://stream.binance.com:9443/stream?streams=" +
+            "btcusdc@ticker/ethusdc@ticker/solusdc@ticker/bnbusdc@ticker/adausdc@ticker" +
+            "/xrpusdc@ticker/dogeusdc@ticker/avaxusdc@ticker/dotusdc@ticker/linkusdc@ticker";
 
         try {
             webSocketClient = new WebSocketClient(new URI(streamUrl)) {
@@ -40,16 +38,13 @@ public class BinanceWebSocketService {
                 public void onMessage(String message) {
                     try {
                         JsonNode jsonNode = objectMapper.readTree(message);
+                        JsonNode ticker = jsonNode.has("data") ? jsonNode.get("data") : jsonNode;
 
-                        if (jsonNode.has("s") && jsonNode.has("c")) {
-                            String symbol = jsonNode.get("s").asText();
-                            double price = jsonNode.get("c").asDouble();
+                        if (ticker.has("s") && ticker.has("c")) {
+                            String symbol = ticker.get("s").asText();
+                            double price = ticker.get("c").asDouble();
 
-                            // 1. Обновяваме цената и пращаме към UI
                             stockService.updateStockPrice(symbol, price);
-
-                            // 2. Проверяваме за PENDING поръчки
-                            matchingEngineService.processPendingOrders(symbol, price);
                         }
                     } catch (Exception e) {
                         if (webSocketClient != null && webSocketClient.isClosed()) return;
